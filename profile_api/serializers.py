@@ -1,0 +1,38 @@
+from rest_framework import serializers
+from profile_api import models
+
+
+class HelloSerializer(serializers.Serializer):
+    """Serializes a name field for testing the APIView"""
+    name = serializers.CharField(max_length=10)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Seraializes a user based on UserProfile Model"""
+    class Meta:
+        model = models.UserProfile
+        fields = ('id', 'name', 'email', 'password')
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+                'style': {
+                    'input_type': 'password'
+                }
+            }
+        }
+
+    def create(self,validated_data):
+        user = models.UserProfile.objects.create_user(
+            email=validated_data['email'], 
+            name=validated_data['name'], 
+            password=validated_data['password']
+        )
+        return user
+
+
+class ProfileFeedItemSerializer(serializers.ModelSerializer):
+    """serializers a profile feed object based on ProfileFeedItem"""
+    class Meta:
+        model = models.ProfileFeedItem
+        fields = ('id', 'user_profile', 'status_text', 'created_on')
+        extra_kwargs = {'user_profile': {'read_only': True}}
